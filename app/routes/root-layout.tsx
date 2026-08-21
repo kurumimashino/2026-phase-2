@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { data, isRouteErrorResponse, Outlet } from "react-router"
 import { showToast } from "~/components/common/toast"
 import { Toaster } from "~/components/ui/sonner"
@@ -17,11 +18,17 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: <explanation>
+const message: string | undefined = "単語"
+const nonEmptyMessage: string = message
+
 export default function RootLayout({ loaderData }: Route.ComponentProps) {
-	if (loaderData.toastPayload) {
-		// 副作用
-		showToast(loaderData.toastPayload)
-	}
+	useEffect(() => {
+		if (loaderData.toastPayload) {
+			// 副作用
+			showToast(loaderData.toastPayload)
+		}
+	}, [loaderData.toastPayload])
 
 	return (
 		<>
