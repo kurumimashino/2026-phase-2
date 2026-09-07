@@ -6,7 +6,7 @@ import {
 	PlayIcon,
 	SendIcon,
 } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { redirect, useFetcher } from "react-router"
 import * as v from "valibot"
 import { showToast } from "~/components/common/toast"
@@ -283,6 +283,7 @@ export function CreateApplicationUrl({
 	setOpenCreateDialog: (value: boolean) => void
 	fetcher1: ReturnType<typeof useFetcher>
 }) {
+	const formRef = useRef<HTMLFormElement>(null)
 	return (
 		<div className="space-y-6">
 			<div className="space-y-1">
@@ -305,7 +306,7 @@ export function CreateApplicationUrl({
 					</CardHeader>
 					<CollapsibleContent asChild>
 						<CardContent>
-							<fetcher1.Form method="POST">
+							<fetcher1.Form method="POST" ref={formRef}>
 								<input type="hidden" name="intent" value="create" />
 								<FieldGroup>
 									<Field>
@@ -375,7 +376,14 @@ export function CreateApplicationUrl({
 						</AlertDialogHeader>
 						<AlertDialogFooter>
 							<AlertDialogCancel>キャンセル</AlertDialogCancel>
-							<AlertDialogAction type="button" onClick={() => {}}>
+							<AlertDialogAction
+								type="button"
+								onClick={() => {
+									if (formRef.current) {
+										fetcher1.submit(formRef.current)
+									}
+								}}
+							>
 								募集を始める
 							</AlertDialogAction>
 						</AlertDialogFooter>
@@ -574,7 +582,7 @@ export function Links({
 // 	}
 
 // 	return (
-// 			<div className="space-y-6">
+// 		<div className="space-y-6">
 // 			<div className="space-y-1">
 // 				<h1 className="text-2xl font-semibold">バンドの募集</h1>
 // 				<p className="text-muted-foreground text-sm">
@@ -742,7 +750,7 @@ export function Links({
 // 						<div className="space-y-4">
 // 							{suspendedApplicationsWithUrl.map((apl) => (
 // 								<div className="space-y-1" key={apl.id}>
-// 									<div className="shrink-0 inline-flex w-24 gap-2>
+// 									<div className="shrink-0 inline-flex w-24 gap-2">
 // 										<span className="shrink-0">{apl.name}</span>
 // 										<span className="shrink-0 text-muted-foreground">
 // 											{formatPlainDateTime(apl.updatedAt)}
