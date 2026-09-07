@@ -3,10 +3,9 @@ import {
 	CopyIcon,
 	LoaderCircleIcon,
 	PauseIcon,
-	PlayIcon,
-	SendIcon,
+	PlayIcon, SendIcon
 } from "lucide-react"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { redirect, useFetcher } from "react-router"
 import * as v from "valibot"
 import { showToast } from "~/components/common/toast"
@@ -34,7 +33,6 @@ import {
 	FieldLabel,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import { Separator } from "~/components/ui/separator"
 import { Switch } from "~/components/ui/switch"
 import type { LiveApplication } from "~/domain/entities/live-application"
 import { createApplicationUrl } from "~/domain/service/create-application-url"
@@ -100,7 +98,6 @@ export default function LiveApplicationPage({
 	const [openCreateDialog, setOpenCreateDialog] = useState(false)
 	const [initialAvailability, setInitialAvailability] = useState(false)
 
-	const formRef = useRef<HTMLFormElement>(null)
 	const fetcher1 = useFetcher()
 
 	const fetcher2 = useFetcher()
@@ -113,216 +110,38 @@ export default function LiveApplicationPage({
 				message: "クリップボードへのコピーが失敗しました",
 			})
 		}
+		
 		showToast({ type: "success", message: "申請リンクをコピーしました" })
+		
 	}
 
 	return (
-		<div className="space-y-6">
-			<div className="space-y-1">
-				<h1 className="text-2xl font-semibold">バンドの募集</h1>
-				<p className="text-muted-foreground text-sm">
-					参加を希望するバンドにこのURLを共有してください
-				</p>
-			</div>
-			<Collapsible>
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex justify-between items-center">
-							<div>新しいバンド募集リンクを作成</div>
-							<CollapsibleTrigger asChild>
-								<Button size="icon" variant="ghost">
-									<ChevronsUpDownIcon />
-								</Button>
-							</CollapsibleTrigger>
-						</CardTitle>
-					</CardHeader>
-					<CollapsibleContent asChild>
-						<CardContent>
-							<fetcher1.Form method="POST" ref={formRef}>
-								<input type="hidden" name="intent" value="create" />
-								<FieldGroup>
-									<Field>
-										<FieldLabel htmlFor="application-name">
-											募集分類名（任意）
-										</FieldLabel>
-										<FieldDescription>
-											ライブ管理者の識別のためにのみ使用します。外部へ公開されません。
-										</FieldDescription>
-										<Input
-											id="application-name"
-											name="application-name"
-											placeholder="例：一次募集"
-										/>
-									</Field>
-									<Field>
-										<FieldLabel>初期設定</FieldLabel>
-										<div className="inline-flex gap-2">
-											<Switch
-												id="available"
-												checked={initialAvailability}
-												onCheckedChange={setInitialAvailability}
-											/>
-											<input
-												type="hidden"
-												name="initial-available"
-												value={Number(initialAvailability)}
-											/>
-											<FieldLabel htmlFor="available">停止・有効</FieldLabel>
-										</div>
-									</Field>
-									<Field>
-										<Button
-											type="button"
-											className="w-full"
-											onClick={() => setOpenCreateDialog(true)}
-											disabled={fetcher1.state === "submitting"}
-										>
-											{fetcher1.state === "submitting" ? (
-												<LoaderCircleIcon className="animate-spin" />
-											) : (
-												<SendIcon />
-											)}
-											作成
-										</Button>
-									</Field>
-								</FieldGroup>
-							</fetcher1.Form>
-						</CardContent>
-					</CollapsibleContent>
-				</Card>
-				<AlertDialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								{initialAvailability
-									? "本当に募集を始めてもいいですか？"
-									: "募集リンクを作成します。"}
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<span>
-									現在の初期設定は「{initialAvailability ? "有効" : "停止"}
-									」です。
-								</span>
-								<span>いつでも停止・再開できます。</span>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>キャンセル</AlertDialogCancel>
-							<AlertDialogAction
-								type="button"
-								onClick={() => {
-									if (formRef.current) fetcher1.submit(formRef.current)
-								}}
-							>
-								募集を始める
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</Collapsible>
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex gap-1 items-center">
-						有効なリンク
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{availableApplicationsWithUrl.length === 0 ? (
-						<span className="text-muted-foreground text-sm">
-							有効なリンクはありません
-						</span>
-					) : (
-						<div className="space-y-4">
-							{availableApplicationsWithUrl.map((apl) => (
-								<div className="space-y-1" key={apl.id}>
-									<div className="w-full flex items-baseline gap-2">
-										<span className="shrink-0">{apl.name}</span>
-										<span className="shrink-0 text-muted-foreground text-xs">
-											{formatPlainDateTime(apl.updatedAt)}
-										</span>
-									</div>
-									<div className="flex gap-2 items-center">
-										<div className="grow truncate text-muted-foreground py-2 px-4 bg-muted rounded-lg">
-											{apl.url}
-										</div>
-										<Button
-											size="icon-lg"
-											variant="destructive"
-											onClick={() => {
-												const formData = new FormData()
-												formData.append("intent", "suspend-application")
-												formData.append("application-id", String(apl.id))
-												fetcher2.submit(formData, { method: "POST" })
-											}}
-										>
-											<PauseIcon />
-										</Button>
-										<Button
-											size="icon-lg"
-											className="w-16"
-											onClick={() => handleCopy(apl.url)}
-										>
-											<CopyIcon />
-										</Button>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-				<Separator />
-				<CardHeader>
-					<CardTitle className="flex gap-1 items-center">
-						停止されたリンク
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{suspendedApplicationsWithUrl.length === 0 ? (
-						<span className="text-muted-foreground text-sm">
-							有効なリンクはありません
-						</span>
-					) : (
-						<div className="space-y-4">
-							{suspendedApplicationsWithUrl.map((apl) => (
-								<div className="space-y-1" key={apl.id}>
-									<div className="shrink-0 inline-flex w-24 gap-2">
-										<span className="shrink-0">{apl.name}</span>
-										<span className="shrink-0 text-muted-foreground">
-											{formatPlainDateTime(apl.updatedAt)}
-										</span>
-									</div>
-									<div className="flex gap-2 items-center">
-										<div className="grow truncate text-muted-foreground py-2 px-4 bg-muted rounded-lg">
-											{apl.url}
-										</div>
-										<Button
-											size="icon-lg"
-											variant="destructive"
-											onClick={() => {
-												const formData = new FormData()
-												formData.append("intent", "enable-application")
-												formData.append("application-id", String(apl.id))
-												fetcher2.submit(formData, { method: "POST" })
-											}}
-										>
-											<PlayIcon />
-										</Button>
-										<Button
-											size="icon-lg"
-											className="w-16"
-											onClick={() => handleCopy(apl.url)}
-										>
-											<CopyIcon />
-										</Button>
-									</div>
-								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-			</Card>
-		</div>
-	)
+		CreateApplicationUrl({
+			initialAvailability,
+			setInitialAvailability,
+			openCreateDialog,
+			setOpenCreateDialog,
+			fetcher1,
+			
+		}),
+		
+			 Links({link="有効",
+			availableApplicationsWithUrl,
+			fetcher2,
+			handleCopy,
+			icon:<PlayIcon />
+}),
+Links({link="停止",
+			suspendedApplicationsWithUrl,
+			fetcher2,
+			handleCopy,
+			icon:<PauseIcon />
+})
+
+			
+			
+
+)
 }
 
 const FormDataSchema = v.variant("intent", [
@@ -448,3 +267,188 @@ export async function action({ request, context }: Route.ActionArgs) {
 		})
 	}
 }
+
+export function CreateApplicationUrl({
+	initialAvailability,
+	setInitialAvailability,
+	openCreateDialog,
+	setOpenCreateDialog,
+	fetcher1,
+	formRef = { current: null as HTMLFormElement | null },
+}: {
+	initialAvailability: boolean
+	setInitialAvailability: (value: boolean) => void
+	openCreateDialog: boolean
+	setOpenCreateDialog: (value: boolean) => void
+	fetcher1: ReturnType<typeof useFetcher>
+}) {
+	return (
+		<div className="space-y-6">
+			<div className="space-y-1">
+				<h1 className="text-2xl font-semibold">バンドの募集</h1>
+				<p className="text-muted-foreground text-sm">
+					参加を希望するバンドにこのURLを共有してください
+				</p>
+			</div>
+			<Collapsible>
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex justify-between items-center">
+							<div>新しいバンド募集リンクを作成</div>
+							<CollapsibleTrigger asChild>
+								<Button size="icon" variant="ghost">
+									<ChevronsUpDownIcon />
+								</Button>
+							</CollapsibleTrigger>
+						</CardTitle>
+					</CardHeader>
+					<CollapsibleContent asChild>
+						<CardContent>
+							<fetcher1.Form method="POST" ref={formRef}>
+								<input type="hidden" name="intent" value="create" />
+								<FieldGroup>
+									<Field>
+										<FieldLabel htmlFor="application-name">
+											募集分類名（任意）
+										</FieldLabel>
+										<FieldDescription>
+											ライブ管理者の識別のためにのみ使用します。外部へ公開されません。
+										</FieldDescription>
+										<Input
+											id="application-name"
+											name="application-name"
+											placeholder="例：一次募集"
+										/>
+									</Field>
+									<Field>
+										<FieldLabel>初期設定</FieldLabel>
+										<div className="inline-flex gap-2">
+											<Switch
+												id="available"
+												checked={initialAvailability}
+												onCheckedChange={setInitialAvailability}
+											/>
+											<input
+												type="hidden"
+												name="initial-available"
+												value={Number(initialAvailability)}
+											/>
+											<FieldLabel htmlFor="available">停止・有効</FieldLabel>
+										</div>
+									</Field>
+									<Field>
+										<Button
+											type="button"
+											className="w-full"
+											onClick={() => setOpenCreateDialog(true)}
+											disabled={fetcher1.state === "submitting"}
+										>
+											{fetcher1.state === "submitting" ? (
+												<LoaderCircleIcon className="animate-spin" />
+											) : (
+												<SendIcon />
+											)}
+											作成
+										</Button>
+									</Field>
+								</FieldGroup>
+							</fetcher1.Form>
+						</CardContent>
+					</CollapsibleContent>
+				</Card>
+				<AlertDialog open={openCreateDialog} onOpenChange={setOpenCreateDialog}>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>
+								{initialAvailability
+									? "本当に募集を始めてもいいですか？"
+									: "募集リンクを作成します。"}
+							</AlertDialogTitle>
+							<AlertDialogDescription>
+								<span>
+									現在の初期設定は「{initialAvailability ? "有効" : "停止"}
+									」です。
+								</span>
+								<span>いつでも停止・再開できます。</span>
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>キャンセル</AlertDialogCancel>
+							<AlertDialogAction
+								type="button"
+								onClick={() => {
+									if (formRef.current) fetcher1.submit(formRef.current)
+								}}
+							>
+								募集を始める
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
+			</Collapsible>
+		</div>
+	)
+}
+
+export function Links({availableApplicationsWithUrl,suspendedApplicationsWithUrl, fetcher2, handleCopy, link,icon}: {
+	availableApplicationsWithUrl: LiveApplicationWithUrl[],
+	suspendedApplicationsWithUrl: LiveApplicationWithUrl[],
+	fetcher2: ReturnType<typeof useFetcher>,
+	handleCopy: (url: string) => Promise<void>,
+	link: string
+icon: React.ReactNode}
+
+)
+{return (
+	<div>
+	<CardHeader>
+					<CardTitle className="flex gap-1 items-center">
+						{link}リンク
+					</CardTitle>
+				</CardHeader>
+				<CardContent>
+					{availableApplicationsWithUrl.length === 0 ? (
+						<span className="text-muted-foreground text-sm">
+							有効なリンクはありません
+						</span>
+					) : (
+						<div className="space-y-4">
+							{availableApplicationsWithUrl.map((apl) => (
+								<div className="space-y-1" key={apl.id}>
+									<div className="w-full flex items-baseline gap-2">
+										<span className="shrink-0">{apl.name}</span>
+										<span className="shrink-0 text-muted-foreground text-xs">
+											{formatPlainDateTime(apl.updatedAt)}
+										</span>
+									</div>
+									<div className="flex gap-2 items-center">
+										<div className="grow truncate text-muted-foreground py-2 px-4 bg-muted rounded-lg">
+											{apl.url}
+										</div>
+										<Button
+											size="icon-lg"
+											variant="destructive"
+											onClick={() => {
+												const formData = new FormData()
+												formData.append("intent", "suspend-application")
+												formData.append("application-id", String(apl.id))
+												fetcher2.submit(formData, { method: "POST" })
+											}}
+										>
+											<PauseIcon />
+										</Button>
+										<Button
+											size="icon-lg"
+											className="w-16"
+											onClick={() => handleCopy(apl.url)}
+										>
+											<CopyIcon />
+										</Button>
+									</div>
+								</div>
+							))}
+						</div>
+					)}
+				</CardContent>
+				</div>
+)}
