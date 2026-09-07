@@ -3,7 +3,8 @@ import {
 	CopyIcon,
 	LoaderCircleIcon,
 	PauseIcon,
-	PlayIcon, SendIcon
+	PlayIcon,
+	SendIcon,
 } from "lucide-react"
 import { useState } from "react"
 import { redirect, useFetcher } from "react-router"
@@ -110,9 +111,8 @@ export default function LiveApplicationPage({
 				message: "クリップボードへのコピーが失敗しました",
 			})
 		}
-		
+
 		showToast({ type: "success", message: "申請リンクをコピーしました" })
-		
 	}
 
 	return (
@@ -122,26 +122,22 @@ export default function LiveApplicationPage({
 			openCreateDialog,
 			setOpenCreateDialog,
 			fetcher1,
-			
 		}),
-		
-			 Links({link="有効",
+		Links({
+			link: "有効",
 			availableApplicationsWithUrl,
 			fetcher2,
 			handleCopy,
-			icon:<PlayIcon />
-}),
-Links({link="停止",
+			icon: <PlayIcon />,
+		}),
+		Links({
+			link: "停止",
 			suspendedApplicationsWithUrl,
 			fetcher2,
 			handleCopy,
-			icon:<PauseIcon />
-})
-
-			
-			
-
-)
+			icon: <PauseIcon />,
+		})
+	)
 }
 
 const FormDataSchema = v.variant("intent", [
@@ -390,65 +386,70 @@ export function CreateApplicationUrl({
 	)
 }
 
-export function Links({availableApplicationsWithUrl,suspendedApplicationsWithUrl, fetcher2, handleCopy, link,icon}: {
-	availableApplicationsWithUrl: LiveApplicationWithUrl[],
-	suspendedApplicationsWithUrl: LiveApplicationWithUrl[],
-	fetcher2: ReturnType<typeof useFetcher>,
-	handleCopy: (url: string) => Promise<void>,
+export function Links({
+	availableApplicationsWithUrl,
+	suspendedApplicationsWithUrl,
+	fetcher2,
+	handleCopy,
+	link,
+	icon,
+}: {
+	availableApplicationsWithUrl: LiveApplicationWithUrl[]
+	suspendedApplicationsWithUrl: LiveApplicationWithUrl[]
+	fetcher2: ReturnType<typeof useFetcher>
+	handleCopy: (url: string) => Promise<void>
 	link: string
-icon: React.ReactNode}
-
-)
-{return (
-	<div>
-	<CardHeader>
-					<CardTitle className="flex gap-1 items-center">
-						{link}リンク
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{availableApplicationsWithUrl.length === 0 ? (
-						<span className="text-muted-foreground text-sm">
-							有効なリンクはありません
-						</span>
-					) : (
-						<div className="space-y-4">
-							{availableApplicationsWithUrl.map((apl) => (
-								<div className="space-y-1" key={apl.id}>
-									<div className="w-full flex items-baseline gap-2">
-										<span className="shrink-0">{apl.name}</span>
-										<span className="shrink-0 text-muted-foreground text-xs">
-											{formatPlainDateTime(apl.updatedAt)}
-										</span>
-									</div>
-									<div className="flex gap-2 items-center">
-										<div className="grow truncate text-muted-foreground py-2 px-4 bg-muted rounded-lg">
-											{apl.url}
-										</div>
-										<Button
-											size="icon-lg"
-											variant="destructive"
-											onClick={() => {
-												const formData = new FormData()
-												formData.append("intent", "suspend-application")
-												formData.append("application-id", String(apl.id))
-												fetcher2.submit(formData, { method: "POST" })
-											}}
-										>
-											<PauseIcon />
-										</Button>
-										<Button
-											size="icon-lg"
-											className="w-16"
-											onClick={() => handleCopy(apl.url)}
-										>
-											<CopyIcon />
-										</Button>
-									</div>
+	icon: React.ReactNode
+}) {
+	return (
+		<div>
+			<CardHeader>
+				<CardTitle className="flex gap-1 items-center">{link}リンク</CardTitle>
+			</CardHeader>
+			<CardContent>
+				{availableApplicationsWithUrl.length === 0 ? (
+					<span className="text-muted-foreground text-sm">
+						有効なリンクはありません
+					</span>
+				) : (
+					<div className="space-y-4">
+						{availableApplicationsWithUrl.map((apl) => (
+							<div className="space-y-1" key={apl.id}>
+								<div className="w-full flex items-baseline gap-2">
+									<span className="shrink-0">{apl.name}</span>
+									<span className="shrink-0 text-muted-foreground text-xs">
+										{formatPlainDateTime(apl.updatedAt)}
+									</span>
 								</div>
-							))}
-						</div>
-					)}
-				</CardContent>
-				</div>
-)}
+								<div className="flex gap-2 items-center">
+									<div className="grow truncate text-muted-foreground py-2 px-4 bg-muted rounded-lg">
+										{apl.url}
+									</div>
+									<Button
+										size="icon-lg"
+										variant="destructive"
+										onClick={() => {
+											const formData = new FormData()
+											formData.append("intent", "suspend-application")
+											formData.append("application-id", String(apl.id))
+											fetcher2.submit(formData, { method: "POST" })
+										}}
+									>
+										<PauseIcon />
+									</Button>
+									<Button
+										size="icon-lg"
+										className="w-16"
+										onClick={() => handleCopy(apl.url)}
+									>
+										<CopyIcon />
+									</Button>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
+			</CardContent>
+		</div>
+	)
+}
