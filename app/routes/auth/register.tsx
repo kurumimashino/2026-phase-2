@@ -11,7 +11,10 @@ import {
 	FieldSet,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import { PasswordConfirmationMismatchError } from "~/domain/data/errors"
+import {
+	InvalidMailDomainError,
+	PasswordConfirmationMismatchError,
+} from "~/domain/data/errors"
 import { fail } from "~/lib/result"
 import { repositoryContext } from "~/middlewares/repositories"
 import { commitSession, getSession } from "~/sessions/sessions"
@@ -100,6 +103,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 	const mail = String(formData.get("mail") || "")
 	const password = String(formData.get("password") || "")
 	const passwordConfirm = String(formData.get("passwordConfirm") || "")
+	const wasedaMailDomains = [".waseda.jp"]
 
 	if (password !== passwordConfirm) {
 		return {
@@ -107,6 +111,14 @@ export async function action({ request, context }: Route.ActionArgs) {
 				new PasswordConfirmationMismatchError(
 					"パスワードとパスワード（確認）が一致しません",
 				),
+			),
+		}
+	}
+
+	if (!wasedaMailDomains.some((domain) => mail.endsWith(domain))) {
+		return {
+			result: fail(
+				new InvalidMailDomainError("メールアドレスの形式が正しくありません"),
 			),
 		}
 	}
