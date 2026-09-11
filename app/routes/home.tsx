@@ -1,19 +1,20 @@
-import { useEffect, useState } from "react"
 import { Link } from "react-router"
 import { Button } from "~/components/ui/button"
+import type { Route } from "./+types/home"
+import { loader as APIloader } from "./app/api/hello-react-router"
 
-export default function TopPage() {
-	const [message, setMessage] = useState<string | null>(null)
-	useEffect(() => {
-		fetch(`${window.location.origin}/api/hello-react-router`)
-			.then((res) => res.json())
-			.then((json) => setMessage(json.message))
-	}, [])
+export async function loader() {
+	const displayedmessage = APIloader()
+	return { displayedmessage }
+}
 
+export default function TopPage({
+	loaderData: { displayedmessage },
+}: Route.ComponentProps) {
 	return (
 		<div>
 			<h1>トップページ</h1>
-			<div>{message}</div>
+			<div>{displayedmessage.message}</div>
 			<Button asChild>
 				<Link to="/auth/login">ログイン</Link>
 			</Button>
@@ -21,7 +22,7 @@ export default function TopPage() {
 			<Button asChild>
 				<Link to="/auth/register">新規アカウント登録</Link>
 			</Button>
-		
+
 			<Button asChild>
 				<Link to="/app">アプリホーム</Link>
 			</Button>
