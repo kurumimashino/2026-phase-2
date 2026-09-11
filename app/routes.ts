@@ -25,7 +25,7 @@ export default [
 					layout("./routes/app/live/live-middleware.tsx", [
 						layout("./routes/app/live/live-layout.tsx", [
 							index("./routes/app/live/home.tsx"),
-							route("application", "./routes/app/live/application.tsx"),
+							route("application", "./routes/app/live/application/index.tsx"),
 							route("band/create", "./routes/app/live/band/create.tsx"),
 							route("timetable", "./routes/app/live/timetable.tsx"),
 						]),
