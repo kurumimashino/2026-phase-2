@@ -27,3 +27,7 @@ export class InvalidSessionTokenError extends BaseError {
 export class ExpiredSessionTokenError extends BaseError {
 	name = "ExpiredSessionTokenError"
 }
+
+export class InvalidMailDomainError extends BaseError {
+	name = "InvalidMailDomainError"
+}
