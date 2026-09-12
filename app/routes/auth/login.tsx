@@ -115,7 +115,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 			result: fail(new InvalidPasswordError("パスワードが間違っています")),
 		}
 
-	validateMail(mail)
+	const validationResult = await validateMail(mail)
+	if (!validationResult.success) return { result: validationResult }
 
 	const token = await signToken(user.id)
 

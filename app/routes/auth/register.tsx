@@ -113,6 +113,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 	}
 
 	const validationResult = await validateMail(mail)
+	if (!validationResult.success) return { result: validationResult }
 
 	const { userRepository } = context.get(repositoryContext)
 
