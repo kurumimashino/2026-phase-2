@@ -11,14 +11,12 @@ import {
 	FieldSet,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import {
-	InvalidMailDomainError,
-	PasswordConfirmationMismatchError,
-} from "~/domain/data/errors"
+import { PasswordConfirmationMismatchError } from "~/domain/data/errors"
 import { fail } from "~/lib/result"
 import { repositoryContext } from "~/middlewares/repositories"
 import { commitSession, getSession } from "~/sessions/sessions"
 import type { Route } from "./+types/register"
+import { validateMail } from "./validation"
 
 export default function RegisterPage({ actionData }: Route.ComponentProps) {
 	const navigation = useNavigation()
@@ -103,7 +101,6 @@ export async function action({ request, context }: Route.ActionArgs) {
 	const mail = String(formData.get("mail") || "")
 	const password = String(formData.get("password") || "")
 	const passwordConfirm = String(formData.get("passwordConfirm") || "")
-	const wasedaMailDomains = [".waseda.jp"]
 
 	if (password !== passwordConfirm) {
 		return {
@@ -115,13 +112,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 		}
 	}
 
-	if (!wasedaMailDomains.some((domain) => mail.endsWith(domain))) {
-		return {
-			result: fail(
-				new InvalidMailDomainError("メールアドレスの形式が正しくありません"),
-			),
-		}
-	}
+	const validationResult = await validateMail(mail)
+	if (!validationResult.success) return { result: validationResult }
 
 	const { userRepository } = context.get(repositoryContext)
 

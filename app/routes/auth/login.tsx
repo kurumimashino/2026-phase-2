@@ -11,16 +11,13 @@ import {
 	FieldSet,
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
-import {
-	InvalidMailDomainError,
-	InvalidPasswordError,
-	UserNotFoundError,
-} from "~/domain/data/errors"
+import { InvalidPasswordError, UserNotFoundError } from "~/domain/data/errors"
 import { fail } from "~/lib/result"
 import { repositoryContext } from "~/middlewares/repositories"
 import { signToken } from "~/sessions/jwt"
 import { commitSession, getSession } from "~/sessions/sessions"
 import type { Route } from "./+types/login"
+import { validateMail } from "./validation"
 
 export default function LoginPage({ actionData }: Route.ComponentProps) {
 	const navigation = useNavigation()
@@ -118,14 +115,8 @@ export async function action({ request, context }: Route.ActionArgs) {
 			result: fail(new InvalidPasswordError("パスワードが間違っています")),
 		}
 
-	const wasedaMailDomains = [".waseda.jp"]
-	if (!wasedaMailDomains.some((domain) => mail.endsWith(domain))) {
-		return {
-			result: fail(
-				new InvalidMailDomainError("メールアドレスの形式が正しくありません"),
-			),
-		}
-	}
+	const validationResult = await validateMail(mail)
+	if (!validationResult.success) return { result: validationResult }
 
 	const token = await signToken(user.id)
 
