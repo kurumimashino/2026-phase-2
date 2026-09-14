@@ -21,7 +21,7 @@ export default function TopPage() {
 			<Button asChild>
 				<Link to="/auth/register">新規アカウント登録</Link>
 			</Button>
-		
+
 			<Button asChild>
 				<Link to="/app">アプリホーム</Link>
 			</Button>
