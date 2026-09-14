@@ -6,7 +6,6 @@ import { BaseError } from "~/lib/error"
 import { repositoryMiddleware } from "~/middlewares/repositories"
 import { commitSession, getSession } from "~/sessions/sessions"
 import type { Route } from "./+types/root-layout"
-import LiveLayout from "./app/live/live-layout"
 
 export const middleware: Route.MiddlewareFunction[] = [repositoryMiddleware]
 
@@ -19,10 +18,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 	)
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: <explanation>
+const message: string | undefined = "単語"
+const nonEmptyMessage: string = message
+
 export default function RootLayout({ loaderData }: Route.ComponentProps) {
-	// 副作用
 	useEffect(() => {
 		if (loaderData.toastPayload) {
+			// 副作用
 			showToast(loaderData.toastPayload)
 		}
 	}, [loaderData.toastPayload])
